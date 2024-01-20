@@ -5,7 +5,7 @@ import json
 finished = False
 tickdata = {"values": []}
 
-ACTIONS = ("Add block", "Quit")
+ACTIONS = ("Add player head block", "Add custom head block", "Quit")
 
 MCMETA_CONTENTS = """{
   "pack": {
@@ -28,10 +28,16 @@ while not finished:
     action = questionary.select("Choose an action:", ACTIONS).ask()
     if action == "Quit":
         break
-    elif action == "Add block":
-        blockname = questionary.text(
-            "Enter the name of the player who owns the head of your block:"
-        ).ask()
+    elif action == "Add player head block" or action == "Add custom head block":
+        if action == "Add player head block":
+            blockdata = questionary.text(
+                "Enter the name of the player who owns the head of your block:"
+            ).ask()
+            blockname = blockdata
+            blockdata = '"' + blockdata + '"'
+        if action == "Add custom head block":
+            blockdata = questionary.text("Enter the SkullOwner data for your block:").ask()
+            blockname = questionary.text("Enter the name of your block:").ask()
         with open(
             os.path.join(
                 datapack_name,
@@ -43,7 +49,7 @@ while not finished:
             "w",
         ) as functionfile:
             functionfile.write(
-                """give @p allay_spawn_egg{EntityTag:{id:chicken,Tags:["headblocks_%s"]},display:{Name:'[{"text":"%s","italic":false}]'}} 1"""
+                """give @p allay_spawn_egg{EntityTag:{id:marker,Tags:["headblocks_%s"]},display:{Name:'[{"text":"%s","italic":false}]'}} 1"""
                 % (blockname, blockname)
             )
         with open(
@@ -57,11 +63,11 @@ while not finished:
             "w",
         ) as functionfile:
             functionfile.write(
-                """execute as @e[type=chicken,tag=headblocks_%s] at @s run summon item_display ~ ~1 ~ {transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[2f,2f,2f]},item:{id:"minecraft:player_head",Count:1b,tag:{SkullOwner:"%s"}}}
-                               execute as @e[type=chicken,tag=headblocks_%s] at @s run setblock ~ ~ ~ barrier
-                               kill @e[type=chicken,tag=headblocks_%s]
+                """execute as @e[type=marker,tag=headblocks_%s] at @s run summon item_display ~ ~1 ~ {transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[2f,2f,2f]},item:{id:"minecraft:player_head",Count:1b,tag:{SkullOwner:%s}}}
+                               execute as @e[type=marker,tag=headblocks_%s] at @s run setblock ~ ~ ~ barrier
+                               kill @e[type=marker,tag=headblocks_%s]
                                """
-                % (blockname, blockname, blockname, blockname)
+                % (blockname, blockdata, blockname, blockname)
             )
         tickdata["values"].append(f"{datapack_name}_tick:{blockname.lower()}")
 with open(
@@ -75,7 +81,7 @@ with open(
     "w",
 ) as functionfile:
     functionfile.write(
-        """give @p strider_spawn_egg{EntityTag:{id:chicken,Tags:["headblocks_removertool"]},display:{Name:'[{"text":"Remover Tool","italic":false}]'}} 1"""
+        """give @p strider_spawn_egg{EntityTag:{id:marker,Tags:["headblocks_removertool"]},display:{Name:'[{"text":"Remover Tool","italic":false}]'}} 1"""
     )
 with open(
     os.path.join(
@@ -88,9 +94,9 @@ with open(
     "w",
 ) as functionfile:
     functionfile.write(
-        """execute as @e[type=chicken,tag=headblocks_removertool] at @s run kill @e[type=item_display,distance=0..1]
-                               execute as @e[type=chicken,tag=headblocks_removertool] at @s run setblock ~ ~-1 ~ air
-                               kill @e[type=chicken,tag=headblocks_removertool]
+        """execute as @e[type=marker,tag=headblocks_removertool] at @s run kill @e[type=item_display,distance=0..1]
+                               execute as @e[type=marker,tag=headblocks_removertool] at @s run setblock ~ ~-1 ~ air
+                               kill @e[type=marker,tag=headblocks_removertool]
                                """
     )
 tickdata["values"].append(f"{datapack_name}_tick:removertool")
